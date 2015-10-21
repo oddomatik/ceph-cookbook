@@ -86,7 +86,7 @@ def ip4_address_in_network?(ip, params, net)
 end
 
 def ip6_address_in_network?(ip, params, net)
-  net.contains?(ip) && params['prefixlen'].to_i == net.bits
+  net.contains?(ip)
 end
 
 def ip_address_to_ceph_address(ip, params)
