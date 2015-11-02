@@ -109,7 +109,7 @@ else
         only_if { osd_device['type'] == 'directory' }
       end
 
-      dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
+      dmcrypt = osd_device['encrypted'] == 'true' ? '--dmcrypt' : ''
 
       execute "ceph-disk-prepare on #{osd_device['device']}" do
         command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
