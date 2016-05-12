@@ -36,3 +36,15 @@ def cephfs_requires_fuse
     true
   end
 end
+
+def ceph_exactversion(pkg)
+  pkg_ver = nil
+  if node['ceph']['exactversion'] then
+    if node['ceph']['exactversion'].respond_to?(:has_key?) then
+      pkg_ver = node['ceph']['exactversion']['default'] if node['ceph']['exactversion'].has_key?('default')
+      pkg_ver = node['ceph']['exactversion'][pkg] if node['ceph']['exactversion'].has_key?(pkg)
+    else
+      pkg_ver = node['ceph']['exactversion']
+    end
+  end
+end
