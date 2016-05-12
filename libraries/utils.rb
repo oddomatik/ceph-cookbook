@@ -22,7 +22,10 @@ def cephfs_requires_fuse
     'cuttlefish' => 3.9,
     'dumpling' => 3.9,
     'emperor' => 3.9,
-    'firefly' => 3.15
+    'firefly' => 3.15,
+    'giant' => 3.15,
+    'hammer' => 4.1,
+    'jewel' => 4.5,
   }
   min_versions.default = 3.15
 
