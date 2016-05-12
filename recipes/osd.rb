@@ -63,8 +63,8 @@ end
 
 if crowbar?
   node['crowbar']['disks'].each do |disk, _data|
-    execute "ceph-disk-prepare #{disk}" do
-      command "ceph-disk-prepare /dev/#{disk}"
+    execute "ceph-disk prepare #{disk}" do
+      command "ceph-disk prepare /dev/#{disk}"
       only_if { node['crowbar']['disks'][disk]['usage'] == 'Storage' }
       notifies :run, 'execute[udev trigger]', :immediately
     end
@@ -82,9 +82,9 @@ if crowbar?
     action :nothing
   end
 else
-  # Calling ceph-disk-prepare is sufficient for deploying an OSD
-  # After ceph-disk-prepare finishes, the new device will be caught
-  # by udev which will run ceph-disk-activate on it (udev will map
+  # Calling `ceph-disk prepare` is sufficient for deploying an OSD
+  # After `ceph-disk prepare` finishes, the new device will be caught
+  # by udev which will run `ceph-disk activate` on it (udev will map
   # the devices if dm-crypt is used).
   # IMPORTANT:
   #  - Always use the default path for OSD (i.e. /var/lib/ceph/
@@ -111,13 +111,13 @@ else
 
       dmcrypt = osd_device['encrypted'] == 'true' ? '--dmcrypt' : ''
 
-      execute "ceph-disk-prepare on #{osd_device['device']}" do
-        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+      execute "ceph-disk prepare on #{osd_device['device']}" do
+        command "ceph-disk prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
         action :run
         notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
       end
 
-      execute "ceph-disk-activate #{osd_device['device']}" do
+      execute "ceph-disk activate #{osd_device['device']}" do
         only_if { osd_device['type'] == 'directory' }
       end
 

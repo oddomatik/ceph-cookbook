@@ -22,7 +22,10 @@ def cephfs_requires_fuse
     'cuttlefish' => 3.9,
     'dumpling' => 3.9,
     'emperor' => 3.9,
-    'firefly' => 3.15
+    'firefly' => 3.15,
+    'giant' => 3.15,
+    'hammer' => 4.1,
+    'jewel' => 4.5,
   }
   min_versions.default = 3.15
 
@@ -31,5 +34,17 @@ def cephfs_requires_fuse
     false
   else
     true
+  end
+end
+
+def ceph_exactversion(pkg)
+  pkg_ver = nil
+  if node['ceph']['exactversion'] then
+    if node['ceph']['exactversion'].respond_to?(:has_key?) then
+      pkg_ver = node['ceph']['exactversion']['default'] if node['ceph']['exactversion'].has_key?('default')
+      pkg_ver = node['ceph']['exactversion'][pkg] if node['ceph']['exactversion'].has_key?(pkg)
+    else
+      pkg_ver = node['ceph']['exactversion']
+    end
   end
 end
