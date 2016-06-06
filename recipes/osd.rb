@@ -141,7 +141,7 @@ else
       else
         service_name 'ceph'
       end
-      action [:enable, :start]
+      action [:enable]
       supports :restart => true
     end
   else
