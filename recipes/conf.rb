@@ -8,8 +8,8 @@ unless node['ceph']['config']['fsid']
 end
 
 directory '/etc/ceph' do
-  owner 'ceph'
-  group 'ceph'
+  owner '64045'
+  group '64045'
   mode '0755'
   action :create
 end
@@ -22,7 +22,7 @@ template '/etc/ceph/ceph.conf' do
       :is_rgw => node['ceph']['is_radosgw']
     }
   }
-  owner 'ceph'
-  group 'ceph'
+  owner '64045'
+  group '64045'
   mode '0644'
 end
