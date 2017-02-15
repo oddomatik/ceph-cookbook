@@ -22,16 +22,16 @@ include_recipe 'ceph::mon_install'
 service_type = node['ceph']['mon']['init_style']
 
 directory '/var/run/ceph' do
-  owner 'root'
-  group 'root'
+  owner 'ceph'
+  group 'ceph'
   mode 00755
   recursive true
   action :create
 end
 
 directory "/var/lib/ceph/mon/ceph-#{node['hostname']}" do
-  owner 'root'
-  group 'root'
+  owner 'ceph'
+  group 'ceph'
   mode 00755
   recursive true
   action :create
