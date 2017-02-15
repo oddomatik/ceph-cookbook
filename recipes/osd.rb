@@ -46,8 +46,8 @@ end
 service_type = node['ceph']['osd']['init_style']
 
 directory '/var/lib/ceph/bootstrap-osd' do
-  owner 'root'
-  group 'root'
+  owner 'ceph'
+  group 'ceph'
   mode '0755'
 end
 
@@ -103,8 +103,8 @@ else
       end
 
       directory osd_device['device'] do # ~FC022
-        owner 'root'
-        group 'root'
+        owner 'ceph'
+        group 'ceph'
         recursive true
         only_if { osd_device['type'] == 'directory' }
       end
