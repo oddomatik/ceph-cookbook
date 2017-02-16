@@ -3,6 +3,7 @@ include_attribute 'ceph'
 default['ceph']['mon']['init_style'] = node['ceph']['init_style']
 
 default['ceph']['mon']['secret_file'] = '/etc/chef/secrets/ceph_mon'
+default['ceph']['mon']['keyring_path'] = '/etc/ceph'
 
 case node['platform_family']
 when 'debian', 'rhel', 'fedora'
