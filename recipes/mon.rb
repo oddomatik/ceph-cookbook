@@ -30,8 +30,8 @@ directory '/var/run/ceph' do
 end
 
 directory "/var/lib/ceph/mon/ceph-#{node['hostname']}" do
-  owner node['ceph']['owner']
-  group node['ceph']['group']
+  owner 'ceph'
+  group 'ceph'
   mode 00755
   recursive true
   action :create
@@ -45,8 +45,6 @@ keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.
 execute 'format mon-secret as keyring' do # ~FC009
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
   creates keyring
-  owner node['ceph']['owner']
-  group node['ceph']['group']
   only_if { mon_secret }
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
@@ -54,8 +52,6 @@ end
 execute 'generate mon-secret as keyring' do # ~FC009
   command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
   creates keyring
-  owner node['ceph']['owner']
-  group node['ceph']['group']
   not_if { mon_secret }
   notifies :create, 'ruby_block[save mon_secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -63,8 +59,6 @@ end
 
 execute 'add bootstrap-osd key to keyring' do
   command lazy { "ceph-authtool '#{keyring}' --name=client.bootstrap-osd --add-key='#{osd_secret}' --cap mon 'allow profile bootstrap-osd'  --cap osd 'allow profile bootstrap-osd'" }
-  owner node['ceph']['owner']
-  group node['ceph']['group']
   only_if { node['ceph']['encrypted_data_bags'] && osd_secret }
 end
 
@@ -81,8 +75,6 @@ end
 
 execute 'ceph-mon mkfs' do
   command "ceph-mon --mkfs -i #{node['hostname']} --keyring '#{keyring}'"
-  owner node['ceph']['owner']
-  group node['ceph']['group']
 end
 
 ruby_block 'finalise' do
@@ -120,8 +112,6 @@ end
 mon_addresses.each do |addr|
   execute "peer #{addr}" do
     command "ceph --admin-daemon '/var/run/ceph/ceph-mon.#{node['hostname']}.asok' add_bootstrap_peer_hint #{addr}"
-    owner node['ceph']['owner']
-    group node['ceph']['group']
     ignore_failure true
   end
 end
