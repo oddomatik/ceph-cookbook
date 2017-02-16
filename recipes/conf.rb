@@ -1,5 +1,7 @@
 # fail 'mon_initial_members must be set in config' if node['ceph']['config']['mon_initial_members'].nil?
 
+include_recipe 'ceph'
+
 unless node['ceph']['config']['fsid']
   Chef::Log.warn('We are genereting a new uuid for fsid')
   require 'securerandom'
