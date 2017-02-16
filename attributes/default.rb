@@ -1,6 +1,9 @@
 default['ceph']['install_debug'] = false
 default['ceph']['encrypted_data_bags'] = false
 
+default['ceph']['owner'] = 'ceph'
+default['ceph']['group'] = 'ceph'
+
 default['ceph']['install_repo'] = true
 
 default['ceph']['user_pools'] = []
