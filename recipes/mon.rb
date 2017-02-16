@@ -54,8 +54,8 @@ end
 execute 'generate mon-secret as keyring' do # ~FC009
   command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
   creates keyring
-  user 'root'
-  group 'root'
+  user node['ceph']['owner']
+  group node['ceph']['group']
   not_if { mon_secret }
   notifies :create, 'ruby_block[save mon_secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
