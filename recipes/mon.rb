@@ -22,16 +22,16 @@ include_recipe 'ceph::mon_install'
 service_type = node['ceph']['mon']['init_style']
 
 directory '/var/run/ceph' do
-  owner 'ceph'
-  group 'ceph'
+  owner node['ceph']['owner']
+  group node['ceph']['group']
   mode 00755
   recursive true
   action :create
 end
 
 directory "/var/lib/ceph/mon/ceph-#{node['hostname']}" do
-  owner 'ceph'
-  group 'ceph'
+  owner node['ceph']['owner']
+  group node['ceph']['group']
   mode 00755
   recursive true
   action :create
@@ -45,6 +45,8 @@ keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.
 execute 'format mon-secret as keyring' do # ~FC009
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
   creates keyring
+  user node['ceph']['owner']
+  group node['ceph']['group']
   only_if { mon_secret }
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
@@ -52,6 +54,8 @@ end
 execute 'generate mon-secret as keyring' do # ~FC009
   command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
   creates keyring
+  user node['ceph']['owner']
+  group node['ceph']['group']
   not_if { mon_secret }
   notifies :create, 'ruby_block[save mon_secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -75,6 +79,8 @@ end
 
 execute 'ceph-mon mkfs' do
   command "ceph-mon --mkfs -i #{node['hostname']} --keyring '#{keyring}'"
+  user node['ceph']['owner']
+  group node['ceph']['group']
 end
 
 ruby_block 'finalise' do
