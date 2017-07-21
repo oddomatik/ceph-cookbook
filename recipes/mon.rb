@@ -40,7 +40,7 @@ end
 # TODO: cluster name
 cluster = 'ceph'
 
-keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
+keyring = "#{node['ceph']['mon']['keyring_path']}/#{cluster}.mon.keyring"
 
 execute 'format mon-secret as keyring' do # ~FC009
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
@@ -115,13 +115,6 @@ service 'ceph_mon' do
   action [:enable, :start]
 end
 
-until 'mon admin socket ready' do
-  command '/bin/false'
-  wait_interval 5
-  message 'sleeping for 5 seconds and retrying'
-  action :run
-end
-
 mon_addresses.each do |addr|
   execute "#{addr}" do
     command "ceph --admin-daemon '/var/run/ceph/ceph-mon.#{node['hostname']}.asok' add_bootstrap_peer_hint #{addr}"
@@ -133,24 +126,24 @@ end
 # Create a new bootstrap-osd secret key if it does not exist either on disk as node attribtues
 bash 'create-bootstrap-osd-key' do
   code <<-EOH
-    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{node['ceph']['cluster']}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
-    ceph-authtool "/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring" \
+    BOOTSTRAP_KEY=$(ceph --name mon. --keyring /etc/ceph/#{cluster}.mon.keyring auth get-or-create-key client.bootstrap-osd mon 'allow profile bootstrap-osd')
+    ceph-authtool "/var/lib/ceph/bootstrap-osd/#{cluster}.keyring" \
         --create-keyring \
         --name=client.bootstrap-osd \
         --add-key="$BOOTSTRAP_KEY"
   EOH
-  only_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
+  only_if "test -s /etc/ceph/#{cluster}.mon.keyring"
   not_if { node['ceph']['bootstrap_osd_key'] }
-  not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
+  not_if "test -s /var/lib/ceph/bootstrap-osd/#{cluster}.keyring"
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
 # If the bootstrap-osd secret key exists as a node attribute but not on disk, write it out
 execute 'format bootstrap-osd-secret as keyring' do
-  command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret}" }
+  command lazy { "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{cluster}.keyring' --create-keyring --name=client.bootstrap-osd --add-key=#{ceph_chef_bootstrap_osd_secret}" }
   only_if { node['ceph']['bootstrap_osd_key'] }
-  not_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
+  not_if "test -s /var/lib/ceph/bootstrap-osd/#{cluster}.keyring"
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
@@ -161,7 +154,7 @@ ruby_block 'check_bootstrap_osd' do
   end
   notifies :create, 'ruby_block[save_bootstrap_osd]', :immediately
   not_if { node['ceph']['bootstrap_osd_key'] }
-  only_if "test -s /var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring"
+  only_if "test -s /var/lib/ceph/bootstrap-osd/#{cluster}.keyring"
 end
 
 # Save the bootstrap-osd secret key to the node attributes. This is typically performed
@@ -170,7 +163,7 @@ end
 # in a higher level recipe to force a specific value
 ruby_block 'save_bootstrap_osd' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-osd")
+    fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-osd/#{cluster}.keyring' --print-key --name=client.bootstrap-osd")
     fetch.run_command
     key = fetch.stdout
     node.normal['ceph']['bootstrap-osd'] = key.delete!("\n")
