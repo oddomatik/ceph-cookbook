@@ -115,6 +115,13 @@ service 'ceph_mon' do
   action [:enable, :start]
 end
 
+until 'mon admin socket ready' do
+  command '/bin/false'
+  wait_interval 5
+  message 'sleeping for 5 seconds and retrying'
+  action :run
+end
+
 mon_addresses.each do |addr|
   execute "peer #{addr}" do
     command "ceph --admin-daemon '/var/run/ceph/ceph-mon.#{node['hostname']}.asok' add_bootstrap_peer_hint #{addr}"
