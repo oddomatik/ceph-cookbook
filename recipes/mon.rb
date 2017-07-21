@@ -123,8 +123,9 @@ until 'mon admin socket ready' do
 end
 
 mon_addresses.each do |addr|
-  execute "peer #{addr}" do
+  execute "#{addr}" do
     command "ceph --admin-daemon '/var/run/ceph/ceph-mon.#{node['hostname']}.asok' add_bootstrap_peer_hint #{addr}"
+    retries 5
     ignore_failure true
   end
 end
@@ -172,7 +173,7 @@ ruby_block 'save_bootstrap_osd' do
     fetch = Mixlib::ShellOut.new("ceph-authtool '/var/lib/ceph/bootstrap-osd/#{node['ceph']['cluster']}.keyring' --print-key --name=client.bootstrap-osd")
     fetch.run_command
     key = fetch.stdout
-    ceph_chef_save_bootstrap_osd_secret(key.delete!("\n"))
+    node.normal['ceph']['bootstrap-osd'] = key.delete!("\n")
   end
   action :nothing
 end
